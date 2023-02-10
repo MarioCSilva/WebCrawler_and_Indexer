@@ -1,7 +1,3 @@
-Point to the project directory:
-
-    cd indexengine
-
 Build and activate a virtual environment for the project (optional):
 
     python -m venv venv
