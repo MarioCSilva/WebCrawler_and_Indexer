@@ -12,3 +12,8 @@ Make sure to have [PostgreSQL](https://www.postgresql.org/download/) installed a
 
 In the file $websites_to_crawl.txt$ there are a list of urls, that will be scraped and extracted content from them for indexation, at application startup.
 
+There are 3 main url paths:
+
+ - /search: Allows to search for indexed documents.
+ - /index_documents: Allows to index new documents manually.
+ - /question: Allows to make questions to the system.
