@@ -2,7 +2,5 @@ whoosh
 psycopg2-binary
 spacy
 django
-re
 urllib3
 beautifulsoup4
-django_heroku
