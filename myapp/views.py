@@ -1,11 +1,13 @@
 import os
+import spacy
+import re
 from django.shortcuts import render, redirect
 from myapp.forms import DocumentForm, SearchForm, QuestionForm
 from myapp.models import Document
 from whoosh import index
 from whoosh.fields import Schema, TEXT
 from whoosh.qparser import QueryParser
-import spacy
+from indexengine.settings import PARSER_STOP_CONTENT, PARSER_STOP_CHARS, PARSER_STOP_WORDS
 
 # Load the SpaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -65,8 +67,27 @@ def extract_entities(question, doc):
 
 
 def question(request):
+    PARSER_STOP_CHARS.extend(["who", "what", "how"])
     if request.method == 'POST':
         question = request.POST.get('question')
+        question = question.strip().replace('\n', ' ').lower()
+        # Filtering stop chars
+        stop_chars_regex = f'(\s)*({"|".join(PARSER_STOP_CHARS)})(\s)*'
+        question = re.sub(
+            stop_chars_regex, " ", question, flags=re.IGNORECASE | re.MULTILINE
+        )
+        # Filtering stop words
+        stop_words_regex = f'(\s)+({"|".join(PARSER_STOP_WORDS)})(\s)+'
+        question = re.sub(
+            stop_words_regex, " ", question, flags=re.IGNORECASE | re.MULTILINE
+        )
+        # Removing all numbers, except years
+        question = re.sub(r"(\s)+(?!((19[0-9]{2}|20[0-9]{2})))([0-9]+)(\s)+",
+            r" ", question, flags=re.IGNORECASE | re.MULTILINE,
+        )
+        # Replacing multiple spaces by only one
+        question = re.sub("(\s)+", " ", question).strip()
+        print(question)
         ix = index.open_dir("indexdir")
         with ix.searcher() as searcher:
             query = QueryParser("content", ix.schema).parse(question)

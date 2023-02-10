@@ -2,7 +2,6 @@ import os
 import re
 import logging
 import requests
-import socket
 # import multiprocessing
 import django
 from bs4 import BeautifulSoup
@@ -14,9 +13,6 @@ import django
 django.setup()
 from myapp.models import Document
 
-# timeout in seconds
-timeout = 5
-socket.setdefaulttimeout(timeout)
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s:%(message)s',
@@ -87,9 +83,14 @@ class Crawler:
         # Index content
         writer = ix.writer()
         for content in contents:
-            document = Document(content=content)
-            document.save()
-            writer.add_document(id=chr(document.id), content=content)
+            try:
+                document = Document.objects.get(content=content)
+            except Document.DoesNotExist:
+                document = None
+            if not document:
+                document = Document(content=content)
+                document.save()
+                writer.add_document(id=str(document.id).encode("utf-8").decode("utf-8"), content=content)
         writer.commit()
 
         # chunk_size = len(contents) // self.num_workers

@@ -17,8 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from myapp import views
 from myapp.crawl_and_index import crawl_and_index_startup
+from whoosh import index
 
-crawl_and_index_startup()
+if not index.exists_in("indexdir"):
+    crawl_and_index_startup()
 
 urlpatterns = [
     path("admin/", admin.site.urls),
